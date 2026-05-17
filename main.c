@@ -6,7 +6,7 @@ typedef struct Kitap {
     char isbn[20];
     char ad[100];
     char yazar[100];
-    char yayinevi[100];
+    char yayinevi[100]; 
     int yayinYili;
     int stok;
     char konum[20];
@@ -24,16 +24,19 @@ int girisYap() {
     printf("Kullanici Adi: ");
     scanf("%s", kullaniciadi);
     
-    printf("\nSifre: ");
+    printf("Sifre: ");
     scanf("%s", sifre);
 
-if(strcmp(kullaniciadi, "admin") == 0 && strcmp(sifre, "1234") == 0 ){
-    return 1;
-}
-if(strcmp(kullaniciadi, "ogrenci") == 0 && strcmp(sifre, "1111") == 0){
-    return 2;
-}
-return 0;
+    if(strcmp(kullaniciadi, "yonetici") == 0 && strcmp(sifre, "1234") == 0 ){
+        return 1;
+    }
+    if(strcmp(kullaniciadi, "personel") == 0 && strcmp(sifre, "2222") == 0 ){
+        return 2;
+    }
+    if(strcmp(kullaniciadi, "ogrenci") == 0 && strcmp(sifre, "1111") == 0){
+        return 3;
+    }
+    return 0;
 }
 
 void kitapEkle() {
@@ -49,8 +52,17 @@ void kitapEkle() {
     printf("Yazar: ");
     scanf("%s", yeni->yazar);
     
+    printf("Yayinevi: ");
+    scanf("%s", yeni->yayinevi);
+    
+    printf("Yayin Yili: ");
+    scanf("%d", &yeni->yayinYili);
+    
     printf("Stok Sayisi: ");
     scanf("%d", &yeni->stok);
+    
+    printf("Konum (Orn: Raf-A1): ");
+    scanf("%s", yeni->konum);
     
     yeni->sonraki = NULL;
 
@@ -64,6 +76,7 @@ void kitapEkle() {
         }
         gecici->sonraki = yeni;
     }
+    printf("\nKitap basariyla eklendi!\n");
 }
 
 void kitapListele() {
@@ -82,7 +95,10 @@ void kitapListele() {
         printf("ISBN: %s\n", gecici->isbn);
         printf("Ad: %s\n", gecici->ad);
         printf("Yazar: %s\n", gecici->yazar);
+        printf("Yayinevi: %s\n", gecici->yayinevi);
+        printf("Yayin Yili: %d\n", gecici->yayinYili);
         printf("Stok: %d\n", gecici->stok);
+        printf("Konum: %s\n", gecici->konum);
         printf("--------------------------\n");
         
         gecici = gecici->sonraki;
@@ -101,26 +117,68 @@ void dosyayaKaydet() {
     Kitap *gecici = bas;
     
     while (gecici != NULL) {
-        fprintf(dosya, "%s|%s|%s|%d\n", gecici->isbn, gecici->ad, gecici->yazar, gecici->stok);
+        fprintf(dosya, "%s , %s , %s , %s , %d , %d , %s\n", 
+                gecici->isbn, gecici->ad, gecici->yazar, gecici->yayinevi, 
+                gecici->yayinYili, gecici->stok, gecici->konum);
         
         gecici = gecici->sonraki;
     }
     
     fclose(dosya);
-    printf("Tum kitaplar kutuphane.txt dosyasina guvenle kaydedildi!\n");
+}
+
+void dosyadanYukle() {
+    FILE *dosya = fopen("kutuphane.txt", "r");
+    
+    if (dosya == NULL) {
+        return; 
+    }
+
+    char isbn[20], ad[100], yazar[100], yayinevi[100], konum[20];
+    int yayinYili, stok;
+
+    while (fscanf(dosya, "%s , %s , %s , %s , %d , %d , %s\n", 
+                  isbn, ad, yazar, yayinevi, &yayinYili, &stok, konum) != EOF) {
+        
+        Kitap *yeni = (Kitap*)malloc(sizeof(Kitap));
+        
+        strcpy(yeni->isbn, isbn);
+        strcpy(yeni->ad, ad);
+        strcpy(yeni->yazar, yazar);
+        strcpy(yeni->yayinevi, yayinevi);
+        yeni->yayinYili = yayinYili;
+        yeni->stok = stok;
+        strcpy(yeni->konum, konum);
+        yeni->sonraki = NULL;
+
+        if (bas == NULL) {
+            bas = yeni;
+        } else {
+            Kitap *gecici = bas;
+            while (gecici->sonraki != NULL) {
+                gecici = gecici->sonraki;
+            }
+            gecici->sonraki = yeni;
+        }
+    }
+
+    fclose(dosya);
 }
 
 int main(){
+    dosyadanYukle(); 
+    
     aktifRol = girisYap();
+    
     if(aktifRol == 0){
-        printf("Hatali giris!");
+        printf("Hatali giris! Program kapatiliyor.\n");
     }
     else{
-        printf("Giris basarili\n");
+        printf("\nGiris basarili!\n\n");
         int secim = -1;
         
         while (secim != 0) {
-            printf("\n=== KUTUPHANE SISTEMI ===\n");
+            printf("=== KUTUPHANE SISTEMI ===\n");
             printf("1. Kitap Ekle\n");
             printf("2. Kitaplari Listele\n");
             printf("0. Cikis\n");
@@ -128,21 +186,19 @@ int main(){
             scanf("%d", &secim);
             
             if (secim == 1) {
-                printf("Kitap ekleme menusu calisti...\n");
                 kitapEkle();
             }
             else if (secim == 2) {
-                printf("Listeleme menusu calisti...\n");
                 kitapListele();
-                
             }
             else if (secim == 0) {
                 dosyayaKaydet();
                 printf("Sistemden cikiliyor. Iyi gunler!\n");
             }
             else {
-                printf("Gecersiz secim. Lutfen tekrar deneyin.\n");
+                printf("Gecersiz secim. Lutfen tekrar deneyin.\n\n");
             }
         }
     }
+    return 0;
 }
