@@ -56,12 +56,10 @@ int girisYap() {
 
     printf("\n--- KULLANICI GIRISI ---\n");
     printf("Kullanici Adi: ");
-    tamponTemizle();
     fgets(kullaniciadi, 50, stdin);
     kullaniciadi[strcspn(kullaniciadi, "\n")] = '\0';
 
     printf("Sifre: ");
-    tamponTemizle();
     fgets(sifre, 50, stdin);
     sifre[strcspn(sifre, "\n")] = '\0';
 
